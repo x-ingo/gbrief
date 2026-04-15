@@ -1,3 +1,11 @@
+gbrief (1.0.1) unstable; urgency=medium
+
+  * Fenster startet in der zuletzt gespeicherten Größe statt maximiert.
+  * Paned-Aufteilung wird beim Schließen gespeichert und wiederhergestellt.
+  * Kompilieren-Button zeigt jetzt ein Refresh-Icon.
+
+ -- Ingo <xhomie.de@gmail.com>  Wed, 15 Apr 2026 21:00:00 +0200
+
 gbrief (1.0.0) unstable; urgency=medium
 
   * Initial release.
