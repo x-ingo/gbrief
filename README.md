@@ -65,4 +65,4 @@ Alle Nutzerdaten liegen ausschließlich lokal:
 
 ## Lizenz
 
-MIT
+[GPL v3](LICENSE) — Weiterentwicklungen müssen ebenfalls als Open Source veröffentlicht werden.

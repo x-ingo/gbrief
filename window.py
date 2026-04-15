@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Ingo
 import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
