@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+import subprocess
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -14,16 +15,47 @@ gi.require_version("Poppler", "0.18")
 from gi.repository import Gtk, Adw, Gdk
 from window import BriefFenster
 
-APP_ID = "de.xhomie.gbrief"
-ICON_SRC = Path(__file__).parent / "gbrief.svg"
-ICON_DEST = Path.home() / ".local" / "share" / "icons" / "hicolor" / "scalable" / "apps" / f"{APP_ID}.svg"
+APP_ID    = "de.xhomie.gbrief"
+SKRIPT    = Path(__file__).resolve()
+ICON_SRC  = SKRIPT.parent / "gbrief.svg"
+ICON_DEST = Path.home() / ".local/share/icons/hicolor/scalable/apps" / f"{APP_ID}.svg"
+DESK_DEST = Path.home() / ".local/share/applications" / f"{APP_ID}.desktop"
 
 
-def _icon_installieren():
-    """Icon einmalig ins lokale Icon-Theme kopieren."""
-    if ICON_SRC.exists() and not ICON_DEST.exists():
+def _lokale_dateien_installieren():
+    """Icon und .desktop-Datei beim ersten Start (oder nach Update) einrichten."""
+
+    # Icon kopieren (immer aktuell halten)
+    if ICON_SRC.exists():
         ICON_DEST.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ICON_SRC, ICON_DEST)
+        if not ICON_DEST.exists() or ICON_SRC.stat().st_mtime > ICON_DEST.stat().st_mtime:
+            shutil.copy2(ICON_SRC, ICON_DEST)
+            # Icon-Cache aktualisieren damit GNOME Shell das Icon sofort findet
+            subprocess.run(
+                ["gtk-update-icon-cache", "-f", "-t",
+                 str(Path.home() / ".local/share/icons/hicolor")],
+                capture_output=True,
+            )
+
+    # .desktop-Datei schreiben (immer aktuell halten, Pfad könnte sich ändern)
+    desktop = f"""\
+[Desktop Entry]
+Name=gbrief
+GenericName=Briefschreiber
+Comment=Professionelle Briefe mit LaTeX (scrlttr2)
+Exec=/usr/bin/python3 {SKRIPT}
+Icon={APP_ID}
+Type=Application
+Categories=Office;WordProcessor;
+StartupWMClass={APP_ID}
+StartupNotify=true
+"""
+    DESK_DEST.parent.mkdir(parents=True, exist_ok=True)
+    DESK_DEST.write_text(desktop, encoding="utf-8")
+    subprocess.run(
+        ["update-desktop-database", str(DESK_DEST.parent)],
+        capture_output=True,
+    )
 
 
 class GBriefApp(Adw.Application):
@@ -31,10 +63,9 @@ class GBriefApp(Adw.Application):
         super().__init__(application_id=APP_ID)
 
     def do_activate(self):
-        # Icon-Suchpfad für diese Sitzung ergänzen (erwartet hicolor/scalable/apps/ Struktur)
-        display = Gdk.Display.get_default()
-        theme = Gtk.IconTheme.get_for_display(display)
-        theme.add_search_path(str(Path(__file__).parent / "icons"))
+        # Projektinternes Icon-Verzeichnis als Suchpfad ergänzen
+        theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+        theme.add_search_path(str(SKRIPT.parent / "icons"))
 
         win = BriefFenster(application=self)
         win.set_icon_name(APP_ID)
@@ -43,7 +74,7 @@ class GBriefApp(Adw.Application):
 
 
 def main():
-    _icon_installieren()
+    _lokale_dateien_installieren()
     app = GBriefApp()
     return app.run(sys.argv)
 
