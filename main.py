@@ -71,7 +71,6 @@ class GBriefApp(Adw.Application):
 
         win = BriefFenster(application=self)
         win.set_icon_name(APP_ID)
-        win.maximize()
         win.present()
 
 

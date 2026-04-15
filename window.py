@@ -44,7 +44,8 @@ class BriefFenster(Adw.ApplicationWindow):
         header = Adw.HeaderBar()
         header.set_show_end_title_buttons(True)
 
-        kompilier_btn = Gtk.Button(label="Kompilieren")
+        kompilier_btn = Gtk.Button(icon_name="view-refresh-symbolic")
+        kompilier_btn.set_tooltip_text("Neu kompilieren")
         kompilier_btn.add_css_class("suggested-action")
         kompilier_btn.connect("clicked", lambda _: self._kompiliere_jetzt())
         header.pack_end(kompilier_btn)
@@ -61,21 +62,12 @@ class BriefFenster(Adw.ApplicationWindow):
 
         hauptbox.append(header)
 
-        paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
-        paned.set_vexpand(True)
-        hauptbox.append(paned)
+        self._paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
+        self._paned.set_vexpand(True)
+        hauptbox.append(self._paned)
 
-        paned.set_start_child(self._baue_eingabeseite())
-        paned.set_end_child(self._baue_vorschauseite())
-
-        # Teiler nach dem ersten Layout-Durchlauf auf 40% setzen
-        def _teiler_setzen(*_):
-            breite = self.get_width()
-            if breite > 100:
-                paned.set_position(int(breite * 0.40))
-            return False  # einmalig ausführen
-
-        GLib.idle_add(_teiler_setzen)
+        self._paned.set_start_child(self._baue_eingabeseite())
+        self._paned.set_end_child(self._baue_vorschauseite())
 
     def _baue_eingabeseite(self):
         # Scrollbarer oberer Bereich (Felder)
@@ -287,6 +279,23 @@ class BriefFenster(Adw.ApplicationWindow):
     def _sitzung_laden(self):
         zustand = session.laden()
 
+        # Fenstergröße wiederherstellen
+        breite = zustand.get("fenster_breite", 1200)
+        hoehe = zustand.get("fenster_hoehe", 800)
+        self.set_default_size(breite, hoehe)
+
+        # Paned-Position nach erstem Layout-Durchlauf setzen
+        paned_pos = zustand.get("paned_position")
+
+        def _layout_fertig(*_):
+            if paned_pos:
+                self._paned.set_position(paned_pos)
+            else:
+                self._paned.set_position(int(self.get_width() * 0.40))
+            return False
+
+        GLib.idle_add(_layout_fertig)
+
         # Absender laden und auswählen
         self._lade_absender_liste(auswahl_id=zustand.get("absender_id"))
 
@@ -311,6 +320,9 @@ class BriefFenster(Adw.ApplicationWindow):
             "brieftext": buf.get_text(buf.get_start_iter(), buf.get_end_iter(), False),
             "opening": self._opening.get_text(),
             "closing": self._closing.get_text(),
+            "fenster_breite": self.get_width(),
+            "fenster_hoehe": self.get_height(),
+            "paned_position": self._paned.get_position(),
         }
         session.speichern(zustand)
         return False  # Fenster normal schließen lassen
