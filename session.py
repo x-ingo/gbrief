@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 from database import DB_PATH
 
 SESSION_PATH = DB_PATH.parent / "session.json"

@@ -607,7 +607,8 @@ class BriefFenster(Adw.ApplicationWindow):
     # ------------------------------------------------------------------ #
 
     def _dateiname_vorschlag(self):
-        import datetime, re
+        import datetime
+        import re
         datum = datetime.date.today().strftime("%Y-%m-%d")
         name = self._aktiver_empfaenger.get("name", "").strip() or "unbekannt"
         name_sauber = re.sub(r"[^\w\-]", "_", name)

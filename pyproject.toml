@@ -1,0 +1,4 @@
+[tool.ruff.lint]
+ignore = [
+    "E402",  # gi.require_version() muss vor gi.repository-Imports stehen
+]

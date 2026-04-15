@@ -1,6 +1,5 @@
 import subprocess
 import tempfile
-import shutil
 import os
 import threading
 from pathlib import Path
