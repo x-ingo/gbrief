@@ -1,0 +1,31 @@
+name: Code-Qualität und Sicherheit
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  lint:
+    name: Ruff (Linter)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+
+  codeql:
+    name: CodeQL (Sicherheitsanalyse)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: CodeQL initialisieren
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+
+      - name: CodeQL-Analyse durchführen
+        uses: github/codeql-action/analyze@v3
