@@ -288,10 +288,13 @@ class BriefFenster(Adw.ApplicationWindow):
         paned_pos = zustand.get("paned_position")
 
         def _layout_fertig(*_):
+            breite = self.get_width()
+            if breite < 100:
+                return True  # Fenster noch nicht dargestellt, erneut versuchen
             if paned_pos:
                 self._paned.set_position(paned_pos)
             else:
-                self._paned.set_position(int(self.get_width() * 0.40))
+                self._paned.set_position(int(breite * 0.40))
             return False
 
         GLib.idle_add(_layout_fertig)
