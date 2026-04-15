@@ -1,0 +1,38 @@
+name: Debian-Paket bauen und Release erstellen
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      - name: Abhängigkeiten installieren
+        run: sudo apt-get install -y debhelper
+
+      - name: Versionsnummer aus Tag ermitteln
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Versionsnummer in debian/changelog eintragen
+        run: |
+          sudo apt-get install -y devscripts
+          DEBEMAIL="xhomie.de@gmail.com" DEBFULLNAME="Ingo" \
+            dch --newversion "${{ steps.version.outputs.version }}" \
+                --distribution unstable \
+                "Release ${{ github.ref_name }}"
+
+      - name: Paket bauen
+        run: dpkg-buildpackage -us -uc -b
+
+      - name: Release erstellen und .deb hochladen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ../gbrief_${{ steps.version.outputs.version }}_all.deb
+          generate_release_notes: true
