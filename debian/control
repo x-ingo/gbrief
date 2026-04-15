@@ -1,0 +1,24 @@
+Source: gbrief
+Section: office
+Priority: optional
+Maintainer: Ingo <xhomie.de@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: gbrief
+Architecture: all
+Depends: ${misc:Depends},
+ python3 (>= 3.10),
+ python3-gi,
+ gir1.2-gtk-4.0,
+ gir1.2-adw-1,
+ gir1.2-gtksource-5,
+ gir1.2-poppler-0.18,
+ latexmk,
+ texlive-latex-recommended,
+ texlive-lang-german
+Description: GNOME Briefschreiber mit LaTeX
+ Professionelle Briefe mit LaTeX (scrlttr2) erstellen und als PDF exportieren.
+ Absender und Empfaenger werden in einer lokalen Datenbank gespeichert.
+ Die Benutzerdaten liegen in ~/.local/share/gbrief/.

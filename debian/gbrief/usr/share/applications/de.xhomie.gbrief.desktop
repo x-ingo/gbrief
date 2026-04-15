@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=gbrief
+GenericName=Briefschreiber
+Comment=Professionelle Briefe mit LaTeX (scrlttr2)
+Exec=gbrief
+Icon=de.xhomie.gbrief
+Type=Application
+Categories=Office;WordProcessor;
+StartupWMClass=de.xhomie.gbrief
+StartupNotify=true

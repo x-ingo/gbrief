@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_build:
+	# Kein Build-Schritt notwendig
+
+override_dh_auto_test:
+	# Keine automatisierten Tests
+
+override_dh_auto_install:
+	# Python-Dateien und Templates
+	install -d $(CURDIR)/debian/gbrief/usr/share/gbrief
+	install -m 644 *.py $(CURDIR)/debian/gbrief/usr/share/gbrief/
+	install -d $(CURDIR)/debian/gbrief/usr/share/gbrief/templates
+	install -m 644 templates/* $(CURDIR)/debian/gbrief/usr/share/gbrief/templates/
+
+	# Icon (systemweit)
+	install -d $(CURDIR)/debian/gbrief/usr/share/icons/hicolor/scalable/apps
+	install -m 644 gbrief.svg \
+		$(CURDIR)/debian/gbrief/usr/share/icons/hicolor/scalable/apps/de.xhomie.gbrief.svg
+
+	# Desktop-Eintrag
+	install -d $(CURDIR)/debian/gbrief/usr/share/applications
+	install -m 644 debian/gbrief.desktop \
+		$(CURDIR)/debian/gbrief/usr/share/applications/de.xhomie.gbrief.desktop
+
+	# Startskript
+	install -d $(CURDIR)/debian/gbrief/usr/bin
+	install -m 755 debian/gbrief.sh $(CURDIR)/debian/gbrief/usr/bin/gbrief
