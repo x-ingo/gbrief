@@ -7,3 +7,10 @@ __pycache__/
 *.db
 session.json
 /tmp/
+
+# Debian-Paket-Build-Artefakte
+debian/gbrief/
+debian/gbrief.substvars
+debian/debhelper-build-stamp
+debian/files
+debian/.debhelper/
