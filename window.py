@@ -11,6 +11,7 @@ import shutil
 import database as db
 import latex_builder
 import session
+import ai_generator
 from preview import PdfVorschau
 
 DEBOUNCE_MS = 1200
@@ -200,6 +201,16 @@ class BriefFenster(Adw.ApplicationWindow):
 
         _format_btn("\u21b5", "Zeilenumbruch  \\\\", "\\\\\n")
         _format_btn("…", "Auslassungspunkte  \\ldots", "\\ldots{}")
+
+        sep4 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        sep4.set_margin_start(4)
+        sep4.set_margin_end(4)
+        toolbar.append(sep4)
+
+        ki_btn = Gtk.Button(label="KI")
+        ki_btn.set_tooltip_text("Text mit Gemini KI generieren")
+        ki_btn.connect("clicked", lambda _: self._ki_dialog())
+        toolbar.append(ki_btn)
 
         outer.append(toolbar)
         outer.append(Gtk.Separator())
@@ -708,6 +719,131 @@ class BriefFenster(Adw.ApplicationWindow):
 
         op.connect("draw-page", _seite_zeichnen)
         op.run(Gtk.PrintOperationAction.PRINT_DIALOG, self)
+
+    # ------------------------------------------------------------------ #
+    # KI-Textgenerierung (Gemini)
+    # ------------------------------------------------------------------ #
+
+    def _ki_dialog(self):
+        api_key = ai_generator.lade_api_key()
+        if not api_key:
+            self._api_key_dialog(danach=self._ki_dialog)
+            return
+
+        dialog = Adw.Dialog()
+        dialog.set_title("Text mit KI generieren")
+        dialog.set_content_width(420)
+
+        toolbar_view = Adw.ToolbarView()
+        ki_header = Adw.HeaderBar()
+        toolbar_view.add_top_bar(ki_header)
+
+        seite = Adw.PreferencesPage()
+
+        eingabe_gruppe = Adw.PreferencesGroup(title="Inhalt")
+
+        stichpunkte_zeile = Adw.EntryRow(title="Stichpunkte")
+        stichpunkte_zeile.set_tooltip_text("z. B.: Kündigung zum nächstmöglichen Termin, Bitte um Bestätigung")
+        eingabe_gruppe.add(stichpunkte_zeile)
+
+        stil_auswahl = Gtk.StringList()
+        for s in ai_generator.STILE:
+            stil_auswahl.append(s)
+        stil_zeile = Adw.ComboRow(title="Stil")
+        stil_zeile.set_model(stil_auswahl)
+        eingabe_gruppe.add(stil_zeile)
+
+        seite.add(eingabe_gruppe)
+
+        status_gruppe = Adw.PreferencesGroup()
+        self._ki_status_zeile = Adw.ActionRow(title="")
+        self._ki_status_zeile.set_visible(False)
+        status_gruppe.add(self._ki_status_zeile)
+        seite.add(status_gruppe)
+
+        toolbar_view.set_content(seite)
+
+        generieren_btn = Gtk.Button(label="Generieren")
+        generieren_btn.add_css_class("suggested-action")
+
+        def _generieren(_btn):
+            stichpunkte = stichpunkte_zeile.get_text().strip()
+            if not stichpunkte:
+                return
+            stil = ai_generator.STILE[stil_zeile.get_selected()]
+            generieren_btn.set_sensitive(False)
+            self._ki_status_zeile.set_title("Generiere Text …")
+            self._ki_status_zeile.set_visible(True)
+
+            def _callback(text, fehler):
+                def _im_hauptthread():
+                    generieren_btn.set_sensitive(True)
+                    self._ki_status_zeile.set_visible(False)
+                    if text:
+                        buf = self._source_buffer
+                        buf.set_text(text)
+                        dialog.close()
+                    else:
+                        self._ki_status_zeile.set_title(fehler or "Unbekannter Fehler")
+                        self._ki_status_zeile.set_visible(True)
+                GLib.idle_add(_im_hauptthread)
+
+            ai_generator.generiere_text(api_key, stichpunkte, stil, _callback)
+
+        generieren_btn.connect("clicked", _generieren)
+        ki_header.pack_end(generieren_btn)
+
+        api_key_btn = Gtk.Button(icon_name="preferences-system-symbolic")
+        api_key_btn.set_tooltip_text("API-Key ändern")
+        api_key_btn.connect("clicked", lambda _: (
+            dialog.close(),
+            self._api_key_dialog(danach=self._ki_dialog),
+        ))
+        ki_header.pack_start(api_key_btn)
+
+        dialog.set_child(toolbar_view)
+        dialog.present(self)
+
+    def _api_key_dialog(self, danach=None):
+        dialog = Adw.Dialog()
+        dialog.set_title("Gemini API-Key")
+        dialog.set_content_width(420)
+
+        toolbar_view = Adw.ToolbarView()
+        header = Adw.HeaderBar()
+        toolbar_view.add_top_bar(header)
+
+        seite = Adw.PreferencesPage()
+        gruppe = Adw.PreferencesGroup(
+            title="Google Gemini API-Key",
+            description='Kostenlosen Key unter aistudio.google.com erstellen.',
+        )
+
+        key_zeile = Adw.PasswordEntryRow(title="API-Key")
+        vorhandener = ai_generator.lade_api_key()
+        if vorhandener:
+            key_zeile.set_text(vorhandener)
+        gruppe.add(key_zeile)
+        seite.add(gruppe)
+        toolbar_view.set_content(seite)
+
+        speichern_btn = Gtk.Button(label="Speichern")
+        speichern_btn.add_css_class("suggested-action")
+
+        def _speichern(_btn):
+            key = key_zeile.get_text().strip()
+            if not key:
+                return
+            ai_generator.speichere_api_key(key)
+            dialog.close()
+            if danach:
+                danach()
+
+        speichern_btn.connect("clicked", _speichern)
+        header.pack_end(speichern_btn)
+
+        dialog.set_child(toolbar_view)
+        dialog.present(self)
 
     def _info_dialog(self):
         dialog = Adw.Dialog()
