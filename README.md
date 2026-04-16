@@ -2,13 +2,29 @@
 
 Professionelle Briefe im DIN-5008-Stil direkt am Desktop schreiben und als PDF exportieren. gbrief nutzt LaTeX (KOMA-Script `scrlttr2`) im Hintergrund und bietet eine moderne GTK4/Adwaita-Oberfläche.
 
-![Screenshot Platzhalter](https://github.com/x-ingo/gbrief/releases)
+![Screenshot](Screenshot.png)
+
+## Bedienung
+
+Die Oberfläche ist zweigeteilt: links die Eingabe, rechts die Live-Vorschau des fertigen Briefes als PDF.
+
+**Absender** – Oben links wählt man ein gespeichertes Absenderprofil (hier: *Maria Musterhaus*) aus dem Dropdown. Über die Schaltflächen daneben lassen sich Profile anlegen und bearbeiten, inklusive optionalem Firmenlogo.
+
+**Empfänger** – Darunter wählt man den Empfänger aus dem Adressbuch (hier: *Max Musterhaus*). Auch hier können Einträge direkt hinzugefügt oder bearbeitet werden.
+
+**Briefkopf** – Anrede und Grußformel sind vorausgefüllt (*Sehr geehrte Damen und Herren* / *Mit freundlichen Grüßen*) und lassen sich jederzeit anpassen.
+
+**Texteditor** – Der große Bereich darunter nimmt den Brieftext auf. Die Formatierungsleiste bietet schnelle Eingabe von Fettdruck, Kursiv, Unterstrichen, Absätzen, Aufzählungen, Anführungszeichen und mehr – alles als LaTeX-Befehle. Der **KI**-Button öffnet den Dialog *Text mit KI generieren*: Stichpunkte eingeben, Stil wählen (formell, freundlich, sachlich …) und den fertigen Text per Klick auf *Generieren* erzeugen lassen.
+
+**PDF-Vorschau** – Rechts erscheint der fertige Brief in Echtzeit. Die Zoom-Steuerung in der Mitte der Toolbar passt die Ansicht an; Speichern, Drucken und manuelles Neu-Kompilieren sind als Schaltflächen oben rechts erreichbar.
 
 ## Features
 
 - Absender-Verwaltung mit optionalem Firmenlogo
-- Empfänger-Datenbank mit Autovervollständigung
+- Empfänger-Adressbuch mit Dropdown-Auswahl
 - Live-Vorschau des fertigen Briefes als PDF
+- KI-Textgenerierung via Google Gemini (optional, eigener API-Key)
+- Formatierungsleiste für gängige LaTeX-Befehle
 - Sitzungsspeicherung (letzter Zustand wird wiederhergestellt)
 - Lokale Datenhaltung in `~/.local/share/gbrief/`
 
@@ -54,6 +70,7 @@ Alle Nutzerdaten liegen ausschließlich lokal:
 |---|---|
 | `~/.local/share/gbrief/gbrief.db` | Absender und Empfänger (SQLite) |
 | `~/.local/share/gbrief/session.json` | Letzter Sitzungszustand |
+| `~/.local/share/gbrief/config.json` | Optionaler Gemini API-Key |
 
 ## Technologie
 
