@@ -135,6 +135,11 @@ class BriefFenster(Adw.ApplicationWindow):
 
         # --- Briefkopf ---
         brief_gruppe = Adw.PreferencesGroup(title="Brief")
+
+        self._subject = Adw.EntryRow(title="Betreff")
+        self._subject.connect("changed", self._eingabe_geaendert)
+        brief_gruppe.add(self._subject)
+
         self._opening = Adw.EntryRow(title="Anrede")
         self._opening.set_text("Sehr geehrte Damen und Herren,")
         self._opening.connect("changed", self._eingabe_geaendert)
@@ -348,7 +353,9 @@ class BriefFenster(Adw.ApplicationWindow):
         if zustand.get("brieftext"):
             self._source_buffer.set_text(zustand["brieftext"])
 
-        # Anrede / Grußformel
+        # Betreff / Anrede / Grußformel
+        if zustand.get("subject"):
+            self._subject.set_text(zustand["subject"])
         if zustand.get("opening"):
             self._opening.set_text(zustand["opening"])
         if zustand.get("closing"):
@@ -360,6 +367,7 @@ class BriefFenster(Adw.ApplicationWindow):
             "absender_id": self._aktiver_absender.get("id") if self._aktiver_absender else None,
             "empfaenger_id": self._aktiver_empfaenger.get("id") if self._aktiver_empfaenger else None,
             "brieftext": buf.get_text(buf.get_start_iter(), buf.get_end_iter(), False),
+            "subject": self._subject.get_text(),
             "opening": self._opening.get_text(),
             "closing": self._closing.get_text(),
             "fenster_breite": self.get_width(),
@@ -640,6 +648,7 @@ class BriefFenster(Adw.ApplicationWindow):
             "to_street": e.get("strasse", ""),
             "to_zip": e.get("plz", ""),
             "to_city": e.get("ort", ""),
+            "subject": self._subject.get_text(),
             "opening": self._opening.get_text(),
             "closing": self._closing.get_text(),
         }

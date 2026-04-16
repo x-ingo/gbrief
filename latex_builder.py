@@ -35,6 +35,7 @@ def _render_template(daten: dict) -> str:
         "%%TO_STREET%%": daten.get("to_street", ""),
         "%%TO_ZIP%%": daten.get("to_zip", ""),
         "%%TO_CITY%%": daten.get("to_city", ""),
+        "%%SUBJECT%%": daten.get("subject", ""),
         "%%OPENING%%": daten.get("opening", "Sehr geehrte Damen und Herren,"),
         "%%BODY%%": daten.get("body", ""),
         "%%CLOSING%%": daten.get("closing", "Mit freundlichen Grüßen"),
