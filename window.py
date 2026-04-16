@@ -44,21 +44,24 @@ class BriefFenster(Adw.ApplicationWindow):
         header = Adw.HeaderBar()
         header.set_show_end_title_buttons(True)
 
-        kompilier_btn = Gtk.Button(icon_name="view-refresh-symbolic")
-        kompilier_btn.set_tooltip_text("Neu kompilieren")
-        kompilier_btn.add_css_class("suggested-action")
-        kompilier_btn.connect("clicked", lambda _: self._kompiliere_jetzt())
-        header.pack_end(kompilier_btn)
+        # Burger-Menü
+        menu = Gio.Menu()
+        menu.append("Info", "win.info")
+        menu.append("Schließen", "win.schliessen")
 
-        drucken_btn = Gtk.Button(icon_name="printer-symbolic")
-        drucken_btn.set_tooltip_text("Drucken")
-        drucken_btn.connect("clicked", self._drucken)
-        header.pack_end(drucken_btn)
+        info_action = Gio.SimpleAction.new("info", None)
+        info_action.connect("activate", lambda *_: self._info_dialog())
+        self.add_action(info_action)
 
-        speichern_btn = Gtk.Button(icon_name="document-save-symbolic")
-        speichern_btn.set_tooltip_text("PDF speichern")
-        speichern_btn.connect("clicked", self._speichern_als)
-        header.pack_end(speichern_btn)
+        schliessen_action = Gio.SimpleAction.new("schliessen", None)
+        schliessen_action.connect("activate", lambda *_: self.close())
+        self.add_action(schliessen_action)
+
+        burger_btn = Gtk.MenuButton()
+        burger_btn.set_icon_name("open-menu-symbolic")
+        burger_btn.set_tooltip_text("Menü")
+        burger_btn.set_menu_model(menu)
+        header.pack_end(burger_btn)
 
         hauptbox.append(header)
 
@@ -235,32 +238,57 @@ class BriefFenster(Adw.ApplicationWindow):
     def _baue_vorschauseite(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        # Zoom-Steuerung
-        zoom_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        zoom_bar.set_margin_top(6)
-        zoom_bar.set_margin_bottom(6)
-        zoom_bar.set_margin_start(6)
-        zoom_bar.set_margin_end(6)
-        zoom_bar.set_halign(Gtk.Align.CENTER)
+        # Toolbar mit CenterBox: Zoom zentriert, PDF-Aktionen rechts
+        toolbar = Gtk.CenterBox()
+        toolbar.set_margin_top(6)
+        toolbar.set_margin_bottom(6)
+        toolbar.set_margin_start(6)
+        toolbar.set_margin_end(6)
+
+        # Zoom-Steuerung (Mitte)
+        zoom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
         zoom_out = Gtk.Button(icon_name="zoom-out-symbolic")
         zoom_out.connect("clicked", lambda _: self._zoom_aendern(-0.1))
-        zoom_bar.append(zoom_out)
+        zoom_box.append(zoom_out)
 
         self._zoom_label = Gtk.Label(label="Auto")
         self._zoom_label.set_size_request(55, -1)
-        zoom_bar.append(self._zoom_label)
+        zoom_box.append(self._zoom_label)
 
         zoom_in = Gtk.Button(icon_name="zoom-in-symbolic")
         zoom_in.connect("clicked", lambda _: self._zoom_aendern(0.1))
-        zoom_bar.append(zoom_in)
+        zoom_box.append(zoom_in)
 
         zoom_fit_btn = Gtk.Button(icon_name="zoom-fit-best-symbolic")
         zoom_fit_btn.set_tooltip_text("An Breite anpassen")
         zoom_fit_btn.connect("clicked", lambda _: self._zoom_anpassen())
-        zoom_bar.append(zoom_fit_btn)
+        zoom_box.append(zoom_fit_btn)
 
-        box.append(zoom_bar)
+        toolbar.set_center_widget(zoom_box)
+
+        # PDF-Aktionen (rechts)
+        aktionen_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
+        speichern_btn = Gtk.Button(icon_name="document-save-symbolic")
+        speichern_btn.set_tooltip_text("PDF speichern")
+        speichern_btn.connect("clicked", self._speichern_als)
+        aktionen_box.append(speichern_btn)
+
+        drucken_btn = Gtk.Button(icon_name="printer-symbolic")
+        drucken_btn.set_tooltip_text("Drucken")
+        drucken_btn.connect("clicked", self._drucken)
+        aktionen_box.append(drucken_btn)
+
+        kompilier_btn = Gtk.Button(icon_name="view-refresh-symbolic")
+        kompilier_btn.set_tooltip_text("Neu kompilieren")
+        kompilier_btn.add_css_class("suggested-action")
+        kompilier_btn.connect("clicked", lambda _: self._kompiliere_jetzt())
+        aktionen_box.append(kompilier_btn)
+
+        toolbar.set_end_widget(aktionen_box)
+
+        box.append(toolbar)
 
         self._vorschau = PdfVorschau(zoom_geaendert_cb=self._zoom_label_aktualisieren)
         self._vorschau.zeige_info("Warten auf Eingabe …")
@@ -680,6 +708,44 @@ class BriefFenster(Adw.ApplicationWindow):
 
         op.connect("draw-page", _seite_zeichnen)
         op.run(Gtk.PrintOperationAction.PRINT_DIALOG, self)
+
+    def _info_dialog(self):
+        dialog = Adw.Dialog()
+        dialog.set_title("Über gbrief")
+        dialog.set_content_width(380)
+
+        toolbar_view = Adw.ToolbarView()
+        toolbar_view.add_top_bar(Adw.HeaderBar())
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        box.set_margin_top(24)
+        box.set_margin_bottom(24)
+        box.set_margin_start(24)
+        box.set_margin_end(24)
+
+        icon = Gtk.Image.new_from_icon_name("de.xhomie.gbrief")
+        icon.set_pixel_size(64)
+        box.append(icon)
+
+        titel = Gtk.Label(label="<b>gbrief</b>")
+        titel.set_use_markup(True)
+        box.append(titel)
+
+        beschreibung = Gtk.Label(
+            label="Professionelle Briefe im DIN-5008-Stil schreiben\nund als PDF exportieren.\n\nNutzt LaTeX (KOMA-Script scrlttr2) im Hintergrund\nmit einer modernen GTK4/Adwaita-Oberfläche."
+        )
+        beschreibung.set_justify(Gtk.Justification.CENTER)
+        beschreibung.set_wrap(True)
+        box.append(beschreibung)
+
+        link = Gtk.LinkButton.new_with_label(
+            "https://github.com/x-ingo/gbrief", "GitHub-Projekt"
+        )
+        box.append(link)
+
+        toolbar_view.set_content(box)
+        dialog.set_child(toolbar_view)
+        dialog.present(self)
 
     def _zeige_fehler_dialog(self, meldung):
         dialog = Adw.AlertDialog(heading="Hinweis", body=meldung)
