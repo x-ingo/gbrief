@@ -2,6 +2,8 @@
 
 Professionelle Briefe im DIN-5008-Stil direkt am Desktop schreiben und als PDF exportieren. gbrief nutzt LaTeX (KOMA-Script `scrlttr2`) im Hintergrund und bietet eine moderne GTK4/Adwaita-Oberfläche.
 
+gbrief greift die Idee von [tk-brief](https://github.com/ralfm/tk-brief) von Ralf Müller auf und setzt sie für den GNOME-Desktop neu um.
+
 ![Screenshot](Screenshot.png)
 
 ## Bedienung
@@ -14,7 +16,7 @@ Die Oberfläche ist zweigeteilt: links die Eingabe, rechts die Live-Vorschau des
 
 **Briefkopf** – Anrede und Grußformel sind vorausgefüllt (*Sehr geehrte Damen und Herren* / *Mit freundlichen Grüßen*) und lassen sich jederzeit anpassen.
 
-**Texteditor** – Der große Bereich darunter nimmt den Brieftext auf. Die Formatierungsleiste bietet schnelle Eingabe von Fettdruck, Kursiv, Unterstrichen, Absätzen, Aufzählungen, Anführungszeichen und mehr – alles als LaTeX-Befehle. Der **KI**-Button öffnet den Dialog *Text mit KI generieren*: Stichpunkte eingeben, Stil wählen (formell, freundlich, sachlich …) und den fertigen Text per Klick auf *Generieren* erzeugen lassen.
+**Texteditor** – Der große Bereich darunter nimmt den Brieftext auf. Die Formatierungsleiste bietet schnelle Eingabe von Fettdruck, Kursiv, Unterstrichen, Absätzen, Aufzählungen, Anführungszeichen und mehr – alles als LaTeX-Befehle. Der **KI**-Button öffnet den Dialog *Text mit KI generieren*: Stichpunkte eingeben, Stil wählen (formell, freundlich, sachlich …) und den fertigen Text per Klick auf *Generieren* erzeugen lassen. Dafür wird ein kostenloser Google Gemini API-Key benötigt, den man unter [aistudio.google.com](https://aistudio.google.com) erstellen kann. Beim ersten Klick auf *KI* wird der Key einmalig abgefragt und lokal gespeichert.
 
 **PDF-Vorschau** – Rechts erscheint der fertige Brief in Echtzeit. Die Zoom-Steuerung in der Mitte der Toolbar passt die Ansicht an; Speichern, Drucken und manuelles Neu-Kompilieren sind als Schaltflächen oben rechts erreichbar.
 
